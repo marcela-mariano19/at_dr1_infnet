@@ -47,11 +47,22 @@ def main ():
         st.subheader(f'Dados da Competição {competition} na Base StatsBomb')
         df = sb.competitions().loc[sb.competitions().competition_name == competition]
         st.dataframe(df)
-        season  = st.radio('Selecione a temporada para análise', df['season_name'],horizontal=True)
+
+        
+        season  = st.sidebar.radio('Selecione a temporada para análise', df['season_name'],horizontal=True)
+        if season:
+            st.session_state['salve_season'] = season
 
         st.subheader(f'Dados da Temporada {season} na Base StatsBomb')
         df_macthes = sb.matches(competition_id=df['competition_id'].values[0],season_id=df['season_id'].values[0])
-        st.dataframe(df_macthes)
+
+
+        team = st.multiselect('Caso queira selecione os times mandantes que deseja visualizar', df_macthes['home_team'].unique())
+        if team:
+            df_macthes_selected = df_macthes[df_macthes['home_team'].isin(team)]
+            st.dataframe(df_macthes_selected)
+        else:
+            st.dataframe(df_macthes)
 
         tab1, tab2 = st.tabs(['Análise por Partida','Análise por Jogador'])
 
@@ -100,6 +111,8 @@ def main ():
             col2.metric('Total de Cartões Amarelos', yellow_cards)
             col2.metric('Total de Gols', player_goals)
 
+            events = sb.events(match_id=match_id)
+            st.dataframe(events)
 
 
 
